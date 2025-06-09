@@ -1,32 +1,12 @@
-# Prerequisites
-*.d
+# Xmake cache
+.xmake/
+build/
 
-# Compiled Object files
-*.slo
-*.lo
-*.o
-*.obj
+# MacOS Cache
+.DS_Store
 
-# Precompiled Headers
-*.gch
-*.pch
+# VS Code Cache
+.vscode
 
-# Compiled Dynamic libraries
-*.so
-*.dylib
-*.dll
-
-# Fortran module files
-*.mod
-*.smod
-
-# Compiled Static libraries
-*.lai
-*.la
-*.a
-*.lib
-
-# Executables
-*.exe
-*.out
-*.app
+# Xmake VS Cache
+vsxmake2022
