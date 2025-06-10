@@ -30,13 +30,15 @@ namespace COUP
 		DUCK,
 		AMBASSADOR,
 
-		// 可阻止可质疑
+		// 可阻止不可质疑
 		FOREIGE_AID,
+
+		// 可阻止可质疑
 		ASSASSIN,
 		CAPTAIN,
 
 		/* 第二阶段可能被阻止也可能被质疑 */
-		BLOCK,
+		BLOCK, // and DOUBT
 
 		/* 第三阶段只可能是被质疑 */
 		DOUBT

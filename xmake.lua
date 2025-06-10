@@ -3,12 +3,12 @@ set_languages("cxx23")
 add_rules("plugin.vsxmake.autoupdate")
 
 if is_plat("windows") then
-   add_defines("MY_WINDOWS")
+--    add_defines("MY_WINDOWS")
    add_links("kernel32.lib", "user32.lib", "gdi32.lib", "winspool.lib", "comdlg32.lib", "advapi32.lib", "shell32.lib", "ole32.lib", "oleaut32.lib", "uuid.lib", "odbc32.lib", "odbccp32.lib")
 elseif is_plat("linux") then 
-    add_defines("MY_LINUX")
+    -- add_defines("MY_LINUX")
 elseif is_plat("macosx") then
-    add_defines("MY_MACOS")
+    -- add_defines("MY_MACOS")
 end
 
 target("coup_core")

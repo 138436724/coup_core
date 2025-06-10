@@ -3,17 +3,19 @@
 #include "Coup_Enums.h"
 #include <iostream>
 
-#ifdef MY_WINDOWS
+#ifdef _WIN32
 #ifdef COUP_API
 #define COUP_API __declspec(dllexport)
 #else
 #define COUP_API __declspec(dllimport)
 #endif // COUP_API
-#endif // MY_WINDOWS
+#endif // _WIN32
 
-#ifdef MY_LINUX
+#ifdef __unix__
 #define COUP_API __attribute__((visibility("default")))
-#endif // MY_LINUX
+#endif // __unix__
+
+typedef uint8_t (*callbackFunc)(uint32_t room_id, uint32_t player_id, int identities_num, COUP::ROLE_IDENTITY *identities);
 
 #ifdef __cplusplus
 extern "C"
@@ -21,7 +23,7 @@ extern "C"
 #endif // __cplusplus
 	/*
 	 * @brief start a game and get a room id
-	 * @param uint32_t num - the number of players
+	 * @param uint32_t num - the id of player
 	 * @return uint32_t - the id of the room
 	 */
 	COUP_API uint32_t startGame(uint32_t num);
@@ -30,9 +32,9 @@ extern "C"
 	 * @brief add a player to a room
 	 * @param uint32_t room_id - the id of the room
 	 * @param uint32_t player_id - the id of the player
-	 * @return COUP::ROLE_IDENTITY - player's intial identity
+	 * @return bool - true if success, false if failed
 	 */
-	COUP_API COUP::ROLE_IDENTITY *addIntoRoom(uint32_t room_id, uint32_t player_id);
+	COUP_API bool addIntoRoom(uint32_t room_id, uint32_t player_id);
 
 	/*
 	 * @brief player action turn
@@ -41,10 +43,40 @@ extern "C"
 	 * @param uint32_t dst_player_id - the id of the dst player
 	 * @param COUP::ROLE_ACTION action - the action
 	 * @param uint8_t coins - the number of coins, just use by CAPTAIN
-	 * @param COUP::ROLE_IDENTITY identity - the identity, use by DOUBT
-	 * @return COUP::ROLE_IDENTITY - if AMBASSADOR use skill, then return the identity of the player
+	 * @param bool round_end - if true will do as the action chain
+	 * @return bool - true if success, false if failed
 	 */
-	COUP_API COUP::ROLE_IDENTITY *playerAction(uint32_t room_id, uint32_t src_player_id, uint32_t dst_player_id, COUP::ROLE_ACTION action, uint8_t coins, COUP::ROLE_IDENTITY identity, bool round_end);
+	COUP_API bool playerAction(uint32_t room_id, uint32_t src_player_id, uint32_t dst_player_id, COUP::ROLE_ACTION action, uint8_t coins, bool round_end);
+
+	/*
+	 * @brief get player's coins
+	 * @param uint32_t room_id - the id of the room
+	 * @param uint32_t num - the id of player
+	 * @return uint32_t - coins the player has
+	 */
+	COUP_API uint8_t getPlayerCoins(uint32_t room_id, uint32_t player_id);
+
+	/*
+	 * @brief get count of player's identity
+	 * @param uint32_t room_id - the id of the room
+	 * @param uint32_t num - the id of player
+	 * @return uint32_t - the count of the player's identity
+	 */
+	COUP_API uint8_t getPlayerIdentityNums(uint32_t room_id, uint32_t player_id);
+
+	/*
+	 * @brief get player's identities.
+	 * @param uint32_t room_id - the id of the room
+	 * @param uint32_t num - the id of player
+	 * @return uint32_t - the identities the player has
+	 */
+	COUP_API const COUP::ROLE_IDENTITY *getPlayerIdentities(uint32_t room_id, uint32_t player_id);
+
+	/*
+	 * @brief register callback function
+	 * @param callbackFunc callback - callback function
+	 */
+	COUP_API void registerCallback(callbackFunc f);
 
 #ifdef __cplusplus
 }
