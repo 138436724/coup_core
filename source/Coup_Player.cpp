@@ -36,8 +36,15 @@ void COUP::Coup_Player::setCoinsNum(const uint8_t coins_num)
 
 void COUP::Coup_Player::setIdentity(const std::vector<ROLE_IDENTITY> &the_identities)
 {
-	cards[0] = the_identities[0];
-	cards[1] = the_identities[1];
+	if (the_identities.size() == 1)
+	{
+		setIdentity(the_identities.front());
+	}
+	else
+	{
+		cards[0] = the_identities[0];
+		cards[1] = the_identities[1];
+	}
 }
 
 void COUP::Coup_Player::setIdentity(const ROLE_IDENTITY the_identity)

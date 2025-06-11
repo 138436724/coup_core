@@ -40,13 +40,12 @@ extern "C"
 	 * @brief player action turn
 	 * @param uint32_t room_id - the id of the room
 	 * @param uint32_t src_player_id - the id of the src player
-	 * @param uint32_t dst_player_id - the id of the dst player
+	 * @param uint32_t dst_player_id - the id of the dst player, if the ACTION has no dst, the dst need same with src.
 	 * @param COUP::ROLE_ACTION action - the action
-	 * @param uint8_t coins - the number of coins, just use by CAPTAIN
 	 * @param bool round_end - if true will do as the action chain
 	 * @return bool - true if success, false if failed
 	 */
-	COUP_API bool playerAction(uint32_t room_id, uint32_t src_player_id, uint32_t dst_player_id, COUP::ROLE_ACTION action, uint8_t coins, bool round_end);
+	COUP_API bool playerAction(uint32_t room_id, uint32_t src_player_id, uint32_t dst_player_id, COUP::ROLE_ACTION action, bool round_end);
 
 	/*
 	 * @brief get player's coins

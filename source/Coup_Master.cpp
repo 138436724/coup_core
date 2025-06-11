@@ -61,6 +61,223 @@ void COUP::Coup_Master::returnCards(const std::vector<ROLE_IDENTITY> &identities
 	}
 }
 
+void COUP::Coup_Master::handleINCOME(const Coup_Action *action)
+{
+	COUP::Coup_Player *src_player = getPlayer(action->src_player_id);
+	src_player->setCoinsNum(src_player->getCoinsNum() + 1);
+}
+
+void COUP::Coup_Master::handleCOUP(const Coup_Action *action)
+{
+	COUP::Coup_Player *src_player = getPlayer(action->src_player_id);
+	src_player->setCoinsNum(src_player->getCoinsNum() - 7);
+
+	COUP::Coup_Player *dst_player = getPlayer(action->dst_player_id);
+	std::vector<COUP::ROLE_IDENTITY> cards = dst_player->getIdentities();
+	uint8_t num_to_fold = callback(id, action->dst_player_id, cards.size(), cards.data()); // todo 给谁选牌
+	cards.erase(cards.begin() + num_to_fold);
+
+	dst_player->setIdentity(cards);
+}
+
+void COUP::Coup_Master::handleDUKE(const Coup_Action *action)
+{
+	COUP::Coup_Player *src_player = getPlayer(action->src_player_id);
+	src_player->setCoinsNum(src_player->getCoinsNum() + 3);
+}
+
+void COUP::Coup_Master::handleAMBASSADOR(const Coup_Action *action)
+{
+	COUP::Coup_Player *src_player = getPlayer(action->src_player_id);
+
+	std::vector<COUP::ROLE_IDENTITY> cards_drew = drawCards(2);
+	std::vector<COUP::ROLE_IDENTITY> cards_had = src_player->getIdentities();
+
+	std::vector<COUP::ROLE_IDENTITY> cards_all(cards_drew.begin(), cards_drew.end());
+	cards_all.insert(cards_all.end(), cards_had.begin(), cards_had.end());
+
+	uint8_t num_to_fold1 = callback(id, action->src_player_id, cards_all.size(), cards_all.data());
+	returnCards(cards_all[num_to_fold1]);
+	cards_all.erase(cards_all.begin() + num_to_fold1);
+
+	uint8_t num_to_fold2 = callback(id, action->src_player_id, cards_all.size(), cards_all.data());
+	returnCards(cards_all[num_to_fold2]);
+	cards_all.erase(cards_all.begin() + num_to_fold2);
+
+	src_player->setIdentity(cards_all);
+}
+
+void COUP::Coup_Master::handleFOREIGE_AID(const Coup_Action *action)
+{
+	COUP::Coup_Player *src_player = getPlayer(action->src_player_id);
+	src_player->setCoinsNum(src_player->getCoinsNum() + 2);
+}
+
+void COUP::Coup_Master::handleASSASSIN(const Coup_Action *action)
+{
+	COUP::Coup_Player *src_player = getPlayer(action->src_player_id);
+	src_player->setCoinsNum(src_player->getCoinsNum() - 3);
+
+	COUP::Coup_Player *dst_player = getPlayer(action->dst_player_id);
+	if (dst_player->getIdentities().size() == 1 || dst_player->getIdentities().size() == 0)
+	{
+		std::vector<COUP::ROLE_IDENTITY> cards = dst_player->getIdentities();
+		returnCards(cards);
+		dst_player->setIdentity();
+	}
+	else if (dst_player->getIdentities().size() == 2)
+	{
+		std::vector<COUP::ROLE_IDENTITY> cards = dst_player->getIdentities();
+		uint8_t num_to_fold = callback(id, action->dst_player_id, cards.size(), cards.data()); // todo
+		returnCards(cards.at(num_to_fold));
+		dst_player->setIdentity(cards.at(1 - num_to_fold));
+	}
+}
+
+void COUP::Coup_Master::handleCAPTAIN(const Coup_Action *action)
+{
+	COUP::Coup_Player *src_player = getPlayer(action->src_player_id);
+	COUP::Coup_Player *dst_player = getPlayer(action->dst_player_id);
+	if (dst_player->getCoinsNum() >= 2)
+	{
+		src_player->setCoinsNum(src_player->getCoinsNum() + 2);
+		dst_player->setCoinsNum(dst_player->getCoinsNum() - 2);
+	}
+	else
+	{
+		src_player->setCoinsNum(src_player->getCoinsNum() + dst_player->getCoinsNum());
+		dst_player->setCoinsNum(0);
+	}
+}
+
+void COUP::Coup_Master::handleBLOCK(const Coup_Action *action)
+{
+	// 获取被阻止的操作
+	const COUP::Coup_Action *pre_action = action->previous_action;
+	if (pre_action && pre_action->action == COUP::ROLE_ACTION::ASSASSIN)
+	{
+		COUP::Coup_Player *pre_src_player = getPlayer(pre_action->src_player_id);
+		pre_src_player->setCoinsNum(pre_src_player->getCoinsNum() - 3);
+	}
+}
+
+void COUP::Coup_Master::handleDOUBT(const Coup_Action *action)
+{
+	const COUP::Coup_Action *pre_action = action->previous_action;
+	if (!pre_action)
+	{
+		return;
+	}
+
+	COUP::Coup_Player *src_player = getPlayer(action->src_player_id);
+	COUP::Coup_Player *dst_player = getPlayer(action->dst_player_id);
+
+	bool has_identity = false;
+	std::vector<COUP::ROLE_IDENTITY> identity_was_doubt = {};
+
+	// 推断身份牌
+	if (pre_action->action == COUP::ROLE_ACTION::DUKE)
+	{
+		identity_was_doubt.push_back(COUP::ROLE_IDENTITY::DUKE);
+		has_identity = dst_player->checkIdentity(COUP::ROLE_IDENTITY::DUKE);
+	}
+	else if (pre_action->action == COUP::ROLE_ACTION::AMBASSADOR)
+	{
+		identity_was_doubt.push_back(COUP::ROLE_IDENTITY::AMBASSADOR);
+		has_identity = dst_player->checkIdentity(COUP::ROLE_IDENTITY::AMBASSADOR);
+	}
+	else if (pre_action->action == COUP::ROLE_ACTION::ASSASSIN)
+	{
+		identity_was_doubt.push_back(COUP::ROLE_IDENTITY::ASSASSIN);
+		has_identity = dst_player->checkIdentity(COUP::ROLE_IDENTITY::ASSASSIN);
+	}
+	else if (pre_action->action == COUP::ROLE_ACTION::CAPTAIN)
+	{
+		identity_was_doubt.push_back(COUP::ROLE_IDENTITY::CAPTAIN);
+		has_identity = dst_player->checkIdentity(COUP::ROLE_IDENTITY::CAPTAIN);
+	}
+	else if (pre_action->action == COUP::ROLE_ACTION::BLOCK)
+	{
+		// 继续往前推断
+		const COUP::Coup_Action *pre_pre_action = pre_action->previous_action;
+		if (!pre_pre_action)
+		{
+			return;
+		}
+
+		if (pre_pre_action->action == COUP::ROLE_ACTION::FOREIGE_AID)
+		{
+			identity_was_doubt.push_back(COUP::ROLE_IDENTITY::DUKE);
+			has_identity = dst_player->checkIdentity(COUP::ROLE_IDENTITY::DUKE);
+		}
+		else if (pre_pre_action->action == COUP::ROLE_ACTION::ASSASSIN)
+		{
+			identity_was_doubt.push_back(COUP::ROLE_IDENTITY::CONTESSA);
+			has_identity = dst_player->checkIdentity(COUP::ROLE_IDENTITY::CONTESSA);
+		}
+		else if (pre_pre_action->action == COUP::ROLE_ACTION::CAPTAIN)
+		{
+			identity_was_doubt.push_back(COUP::ROLE_IDENTITY::CAPTAIN);
+			identity_was_doubt.push_back(COUP::ROLE_IDENTITY::AMBASSADOR);
+			has_identity = dst_player->checkIdentity(COUP::ROLE_IDENTITY::CAPTAIN) || dst_player->checkIdentity(COUP::ROLE_IDENTITY::AMBASSADOR);
+		}
+	}
+
+	if (has_identity && !identity_was_doubt.empty()) // 质疑失败
+	{
+		// src 丢失一张身份牌
+		std::vector<COUP::ROLE_IDENTITY> src_cards = src_player->getIdentities();
+		if (src_cards.size() == 1 || src_cards.size() == 0)
+		{
+			returnCards(src_cards);
+			src_player->setIdentity();
+		}
+		else if (src_cards.size() == 2)
+		{
+			uint8_t num_to_fold = callback(id, action->src_player_id, src_cards.size(), src_cards.data());
+			returnCards(src_cards.at(num_to_fold));
+			src_player->setIdentity(src_cards.at(1 - num_to_fold));
+		}
+
+		// dst 换一张
+		std::vector<COUP::ROLE_IDENTITY> dst_cards = dst_player->getIdentities();
+		COUP::ROLE_IDENTITY card_to_change = drawCards(1).front();
+
+		for (auto &identity : identity_was_doubt)
+		{
+			auto card = std::find(dst_cards.begin(), dst_cards.end(), identity);
+			if (card != dst_cards.end())
+			{
+				returnCards(*card);
+				dst_cards.erase(card);
+				dst_cards.push_back(card_to_change);
+				dst_player->setIdentity(dst_cards);
+			}
+		}
+
+		// dst拥有对应身份牌，src质疑失败，处理上一步
+		handleAction(pre_action);
+	}
+	else // 质疑成功
+	{
+		// dst 丢失一张身份牌
+		std::vector<COUP::ROLE_IDENTITY> cards = dst_player->getIdentities();
+		if (cards.size() == 1 || cards.size() == 0)
+		{
+			returnCards(cards);
+			dst_player->setIdentity();
+		}
+		else if (cards.size() == 2)
+		{
+			uint8_t num_to_fold = callback(id, action->dst_player_id, cards.size(), cards.data());
+			returnCards(cards.at(num_to_fold));
+			dst_player->setIdentity(cards.at(1 - num_to_fold));
+		}
+		// dst没有对应身份牌，src质疑成功，跳过上一步
+		handleAction(pre_action->previous_action);
+	}
+}
+
 bool COUP::Coup_Master::addPlayer(uint32_t player_id)
 {
 	if (game_status == COUP::GAME_STATUS::FULL)
@@ -96,225 +313,66 @@ void COUP::Coup_Master::handleAction(const Coup_Action *action)
 		return;
 	}
 
-	bool has_identity = false;
-	std::vector<COUP::ROLE_IDENTITY> identity_was_doubt = {};
-
-	COUP::Coup_Player *src_player = getPlayer(action->src_player_id);
-	COUP::Coup_Player *dst_player = getPlayer(action->dst_player_id);
-
-	const COUP::Coup_Action *pre_action = nullptr;
-	const COUP::Coup_Action *pre_pre_action = nullptr;
-
-	COUP::Coup_Player *pre_src_player = nullptr;
-	COUP::Coup_Player *pre_dst_player = nullptr;
-	COUP::Coup_Player *pre_pre_src_player = nullptr;
-	COUP::Coup_Player *pre_pre_dst_player = nullptr;
-
-	if (action->previous_action)
-	{
-		pre_action = action->previous_action;
-		pre_src_player = getPlayer(pre_action->src_player_id);
-		pre_dst_player = getPlayer(pre_action->dst_player_id);
-	}
-
-	if (pre_action && pre_action->previous_action)
-	{
-		pre_pre_action = pre_action->previous_action;
-		pre_pre_src_player = getPlayer(pre_pre_action->src_player_id);
-		pre_pre_dst_player = getPlayer(pre_pre_action->dst_player_id);
-	}
-
 	switch (action->action)
 	{
 	case COUP::ROLE_ACTION::INCOME:
-		src_player->setCoinsNum(src_player->getCoinsNum() + 1);
+		handleINCOME(action);
 		break;
 	case COUP::ROLE_ACTION::COUP:
-		src_player->setCoinsNum(src_player->getCoinsNum() - 7);
+		handleCOUP(action);
 		break;
-
-	case COUP::ROLE_ACTION::DUCK:
-		src_player->setCoinsNum(src_player->getCoinsNum() + 3);
+	case COUP::ROLE_ACTION::DUKE:
+		handleDUKE(action);
 		break;
-
 	case COUP::ROLE_ACTION::AMBASSADOR:
-		if (true)
-		{
-			std::vector<COUP::ROLE_IDENTITY> cards_drawed = drawCards(2);
-			std::vector<COUP::ROLE_IDENTITY> cards_had = dst_player->getIdentities();
-
-			std::vector<COUP::ROLE_IDENTITY> cards_all(cards_drawed.begin(), cards_drawed.end());
-			cards_all.insert(cards_all.end(), cards_had.begin(), cards_had.end());
-
-			// send cards and choose how todo ?
-			uint8_t num_to_fold1 = callback(id, action->dst_player_id, cards_all.size(), cards_all.data());
-			cards_all.erase(cards_all.begin() + num_to_fold1);
-
-			uint8_t num_to_fold2 = callback(id, action->dst_player_id, cards_all.size(), cards_all.data());
-			cards_all.erase(cards_all.begin() + num_to_fold2);
-
-			dst_player->setIdentity(cards_all);
-		}
+		handleAMBASSADOR(action);
 		break;
-
 	case COUP::ROLE_ACTION::FOREIGE_AID:
-		src_player->setCoinsNum(src_player->getCoinsNum() + 2);
+		handleFOREIGE_AID(action);
 		break;
-
 	case COUP::ROLE_ACTION::ASSASSIN:
-		src_player->setCoinsNum(src_player->getCoinsNum() - 3);
-		if (dst_player->getIdentities().size() == 1 || dst_player->getIdentities().size() == 0)
-		{
-			std::vector<COUP::ROLE_IDENTITY> cards = dst_player->getIdentities();
-			returnCards(cards);
-			dst_player->setIdentity();
-		}
-		else if (dst_player->getIdentities().size() == 2)
-		{
-			std::vector<COUP::ROLE_IDENTITY> cards = dst_player->getIdentities();
-			uint8_t num_to_fold = callback(id, action->dst_player_id, cards.size(), cards.data());
-
-			returnCards(cards.at(num_to_fold));
-			dst_player->setIdentity(cards.at(1 - num_to_fold));
-		}
+		handleASSASSIN(action);
 		break;
-
 	case COUP::ROLE_ACTION::CAPTAIN:
-		src_player->setCoinsNum(src_player->getCoinsNum() + action->coins);
-		dst_player->setCoinsNum(dst_player->getCoinsNum() - action->coins);
+		handleCAPTAIN(action);
 		break;
-
 	case COUP::ROLE_ACTION::BLOCK:
-		if (pre_action && pre_action->action == COUP::ROLE_ACTION::ASSASSIN)
-		{
-			pre_src_player->setCoinsNum(pre_src_player->getCoinsNum() - 3);
-		}
+		handleBLOCK(action);
 		break;
-
 	case COUP::ROLE_ACTION::DOUBT:
-		// 推断身份牌
-		if (pre_action && pre_action->action == COUP::ROLE_ACTION::BLOCK)
-		{
-			// 继续往前推断
-			if (pre_pre_action && pre_pre_action->action == COUP::ROLE_ACTION::FOREIGE_AID)
-			{
-				identity_was_doubt.push_back(COUP::ROLE_IDENTITY::DUKE);
-				has_identity = dst_player->checkIdentity(COUP::ROLE_IDENTITY::DUKE);
-			}
-			else if (pre_pre_action && pre_pre_action->action == COUP::ROLE_ACTION::ASSASSIN)
-			{
-				identity_was_doubt.push_back(COUP::ROLE_IDENTITY::CONTESSA);
-				has_identity = dst_player->checkIdentity(COUP::ROLE_IDENTITY::CONTESSA);
-			}
-			else if (pre_pre_action && pre_pre_action->action == COUP::ROLE_ACTION::CAPTAIN)
-			{
-				identity_was_doubt.push_back(COUP::ROLE_IDENTITY::CAPTAIN);
-				identity_was_doubt.push_back(COUP::ROLE_IDENTITY::AMBASSADOR);
-				has_identity = dst_player->checkIdentity(COUP::ROLE_IDENTITY::CAPTAIN) || dst_player->checkIdentity(COUP::ROLE_IDENTITY::AMBASSADOR);
-			}
-		}
-		else if (pre_action && pre_action->action == COUP::ROLE_ACTION::DUCK)
-		{
-			identity_was_doubt.push_back(COUP::ROLE_IDENTITY::DUKE);
-			has_identity = dst_player->checkIdentity(COUP::ROLE_IDENTITY::DUKE);
-		}
-		else if (pre_action && pre_action->action == COUP::ROLE_ACTION::AMBASSADOR)
-		{
-			identity_was_doubt.push_back(COUP::ROLE_IDENTITY::AMBASSADOR);
-			has_identity = dst_player->checkIdentity(COUP::ROLE_IDENTITY::AMBASSADOR);
-		}
-		else if (pre_action && pre_action->action == COUP::ROLE_ACTION::ASSASSIN)
-		{
-			identity_was_doubt.push_back(COUP::ROLE_IDENTITY::ASSASSIN);
-			has_identity = dst_player->checkIdentity(COUP::ROLE_IDENTITY::ASSASSIN);
-		}
-		else if (pre_action && pre_action->action == COUP::ROLE_ACTION::CAPTAIN)
-		{
-			identity_was_doubt.push_back(COUP::ROLE_IDENTITY::CAPTAIN);
-			has_identity = dst_player->checkIdentity(COUP::ROLE_IDENTITY::CAPTAIN);
-		}
-
-		if (has_identity && identity_was_doubt.empty())
-		{
-			// src 丢失一张身份牌
-			std::vector<COUP::ROLE_IDENTITY> src_cards = src_player->getIdentities();
-			if (src_cards.size() == 1 || src_cards.size() == 0)
-			{
-				returnCards(src_cards);
-				src_player->setIdentity();
-			}
-			else if (src_cards.size() == 2)
-			{
-				uint8_t num_to_fold = callback(id, action->dst_player_id, src_cards.size(), src_cards.data());
-				returnCards(src_cards.at(num_to_fold));
-				src_player->setIdentity(src_cards.at(1 - num_to_fold));
-			}
-
-			// dst 换一张
-			std::vector<COUP::ROLE_IDENTITY> dst_cards = dst_player->getIdentities();
-			COUP::ROLE_IDENTITY cards_to_change = drawCards(1).front();
-
-			int need_to_change = -1;
-
-			for (size_t i = 0; i < dst_cards.size(); i++)
-			{
-				if (std::find(identity_was_doubt.begin(), identity_was_doubt.end(), dst_cards[i]) != identity_was_doubt.end())
-				{
-					need_to_change = i;
-					break;
-				}
-			}
-
-			returnCards(dst_cards[need_to_change]);
-			dst_cards[need_to_change] = cards_to_change;
-			dst_player->setIdentity(dst_cards);
-
-			// 继续处理
-			handleAction(pre_action); // dst拥有对应身份牌，src质疑失败，处理上一步
-		}
-		else
-		{
-			// dst 丢失一张身份牌
-			std::vector<COUP::ROLE_IDENTITY> cards = dst_player->getIdentities();
-			if (cards.size() == 1 || cards.size() == 0)
-			{
-				returnCards(cards);
-				dst_player->setIdentity();
-			}
-			else if (cards.size() == 2)
-			{
-				uint8_t num_to_fold = callback(id, action->dst_player_id, cards.size(), cards.data());
-				returnCards(cards.at(num_to_fold));
-				dst_player->setIdentity(cards.at(1 - num_to_fold));
-			}
-			// 继续处理
-			handleAction(pre_pre_action); // dst没有对应身份牌，src质疑成功，跳过上一步
-		}
+		handleDOUBT(action);
 		break;
-
 	default:
 		break;
 	}
 }
 
-bool COUP::Coup_Master::addAction(uint32_t src_player_id, uint32_t dst_player_id, COUP::ROLE_ACTION action, uint8_t coins, bool round_end)
+bool COUP::Coup_Master::addAction(uint32_t src_player_id, uint32_t dst_player_id, COUP::ROLE_ACTION action, bool round_end)
 {
+	if ((action == COUP::ROLE_ACTION::COUP && getPlayer(src_player_id)->getCoinsNum() < 7) ||
+		(action == COUP::ROLE_ACTION::ASSASSIN && getPlayer(src_player_id)->getCoinsNum() < 3))
+	{
+		return false;
+	}
+
 	Coup_Action *now_action = nullptr;
+
 	switch (action)
 	{
 	case COUP::ROLE_ACTION::INCOME:
-	case COUP::ROLE_ACTION::COUP:
-	case COUP::ROLE_ACTION::DUCK:
-	case COUP::ROLE_ACTION::AMBASSADOR:
 	case COUP::ROLE_ACTION::FOREIGE_AID:
+	case COUP::ROLE_ACTION::DUKE:
+	case COUP::ROLE_ACTION::AMBASSADOR:
+		dst_player_id = src_player_id;
+	case COUP::ROLE_ACTION::COUP:
 	case COUP::ROLE_ACTION::ASSASSIN:
 	case COUP::ROLE_ACTION::CAPTAIN:
-		now_action = new Coup_Action(id, src_player_id, dst_player_id, action, coins, nullptr);
+		now_action = new Coup_Action(id, src_player_id, dst_player_id, action, nullptr);
 		break;
 
 	case COUP::ROLE_ACTION::BLOCK:
 	case COUP::ROLE_ACTION::DOUBT:
-		now_action = new Coup_Action(id, src_player_id, dst_player_id, action, coins, action_queue.back());
+		now_action = new Coup_Action(id, src_player_id, dst_player_id, action, action_queue.back());
 		break;
 	default:
 		break;

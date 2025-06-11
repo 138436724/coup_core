@@ -27,17 +27,29 @@ namespace COUP
 		Coup_Master(uint32_t id, int num);
 		~Coup_Master();
 
+	private:
 		void shuffleCards();
 		std::vector<ROLE_IDENTITY> drawCards(int num);
 		void returnCards(const ROLE_IDENTITY identity);
 		void returnCards(const std::vector<ROLE_IDENTITY> &identities);
 
+		void handleINCOME(const Coup_Action *action);
+		void handleCOUP(const Coup_Action *action);
+		void handleDUKE(const Coup_Action *action);
+		void handleAMBASSADOR(const Coup_Action *action);
+		void handleFOREIGE_AID(const Coup_Action *action);
+		void handleASSASSIN(const Coup_Action *action);
+		void handleCAPTAIN(const Coup_Action *action);
+		void handleBLOCK(const Coup_Action *action);
+		void handleDOUBT(const Coup_Action *action);
+
+	public:
 		bool addPlayer(uint32_t player_id);
 		Coup_Player *getPlayer(uint32_t player_id) const;
 
 		void handleAction(const Coup_Action *action);
 
-		bool addAction(uint32_t src_player_id, uint32_t dst_player_id, COUP::ROLE_ACTION action, uint8_t coins, bool round_end);
+		bool addAction(uint32_t src_player_id, uint32_t dst_player_id, COUP::ROLE_ACTION action, bool round_end);
 		const Coup_Action *getLastAction() const;
 
 		static void registerCallback(callbackFunc f);

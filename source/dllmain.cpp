@@ -25,10 +25,10 @@ COUP_API bool addIntoRoom(uint32_t room_id, uint32_t player_id)
 	return master->addPlayer(player_id);
 }
 
-COUP_API bool playerAction(uint32_t room_id, uint32_t src_player_id, uint32_t dst_player_id, COUP::ROLE_ACTION action, uint8_t coins, bool round_end)
+COUP_API bool playerAction(uint32_t room_id, uint32_t src_player_id, uint32_t dst_player_id, COUP::ROLE_ACTION action, bool round_end)
 {
 	auto master = Rooms.at(room_id);
-	return master->addAction(src_player_id, dst_player_id, action, coins, round_end);
+	return master->addAction(src_player_id, dst_player_id, action, round_end);
 }
 
 COUP_API uint8_t getPlayerCoins(uint32_t room_id, uint32_t player_id)

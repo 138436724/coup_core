@@ -27,7 +27,7 @@ namespace COUP
 		COUP,
 
 		// 可质疑不可阻止
-		DUCK,
+		DUKE,
 		AMBASSADOR,
 
 		// 可阻止不可质疑

@@ -1,6 +1,7 @@
+add_rules("plugin.vsxmake.autoupdate")
+
 add_rules("mode.debug", "mode.release")
 set_languages("cxx23")
-add_rules("plugin.vsxmake.autoupdate")
 
 if is_plat("windows") then
 --    add_defines("MY_WINDOWS")
