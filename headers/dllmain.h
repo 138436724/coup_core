@@ -56,20 +56,36 @@ extern "C"
 	COUP_API uint8_t getPlayerCoins(uint32_t room_id, uint32_t player_id);
 
 	/*
-	 * @brief get count of player's identity
+	 * @brief get count of player's alive identity
 	 * @param uint32_t room_id - the id of the room
 	 * @param uint32_t num - the id of player
 	 * @return uint32_t - the count of the player's identity
 	 */
-	COUP_API uint8_t getPlayerIdentityNums(uint32_t room_id, uint32_t player_id);
+	COUP_API uint8_t getPlayerIdentityAliveNums(uint32_t room_id, uint32_t player_id);
 
 	/*
-	 * @brief get player's identities.
+	 * @brief get player's alive identities.
 	 * @param uint32_t room_id - the id of the room
 	 * @param uint32_t num - the id of player
 	 * @return uint32_t - the identities the player has
 	 */
-	COUP_API const COUP::ROLE_IDENTITY *getPlayerIdentities(uint32_t room_id, uint32_t player_id);
+	COUP_API const COUP::ROLE_IDENTITY *getPlayerIdentitiesAlive(uint32_t room_id, uint32_t player_id);
+
+	/*
+	 * @brief get count of player's dead identity
+	 * @param uint32_t room_id - the id of the room
+	 * @param uint32_t num - the id of player
+	 * @return uint32_t - the count of the player's identity
+	 */
+	COUP_API uint8_t getPlayerIdentityDeadNums(uint32_t room_id, uint32_t player_id);
+
+	/*
+	 * @brief get player's dead identities.
+	 * @param uint32_t room_id - the id of the room
+	 * @param uint32_t num - the id of player
+	 * @return uint32_t - the identities the player has
+	 */
+	COUP_API const COUP::ROLE_IDENTITY *getPlayerIdentitiesDead(uint32_t room_id, uint32_t player_id);
 
 	/*
 	 * @brief register callback function

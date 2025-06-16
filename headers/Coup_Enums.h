@@ -4,7 +4,6 @@ namespace COUP
 {
 	enum class ROLE_IDENTITY
 	{
-		NO_IDENTITY = 0,
 		DUKE,
 		ASSASSIN,
 		CONTESSA,
@@ -27,15 +26,15 @@ namespace COUP
 		COUP,
 
 		// 可质疑不可阻止
-		DUKE,
-		AMBASSADOR,
+		TAX,
+		EXCHANGE,
 
 		// 可阻止不可质疑
-		FOREIGE_AID,
+		FOREIGN_AID,
 
 		// 可阻止可质疑
-		ASSASSIN,
-		CAPTAIN,
+		ASSASSINATE,
+		STEAL,
 
 		/* 第二阶段可能被阻止也可能被质疑 */
 		BLOCK, // and DOUBT

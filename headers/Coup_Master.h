@@ -20,7 +20,7 @@ namespace COUP
 		GAME_STATUS game_status;
 		std::unordered_map<uint32_t, Coup_Player *> all_players;
 		std::deque<ROLE_IDENTITY> all_identities;
-		std::deque<Coup_Action *> action_queue;
+		std::vector<Coup_Action *> all_actions;
 		static callbackFunc callback;
 
 	public:
@@ -35,11 +35,11 @@ namespace COUP
 
 		void handleINCOME(const Coup_Action *action);
 		void handleCOUP(const Coup_Action *action);
-		void handleDUKE(const Coup_Action *action);
-		void handleAMBASSADOR(const Coup_Action *action);
-		void handleFOREIGE_AID(const Coup_Action *action);
-		void handleASSASSIN(const Coup_Action *action);
-		void handleCAPTAIN(const Coup_Action *action);
+		void handleTAX(const Coup_Action *action);
+		void handleEXCHANGE(const Coup_Action *action);
+		void handleFOREIGN_AID(const Coup_Action *action);
+		void handleASSASSINATE(const Coup_Action *action);
+		void handleSTEAL(const Coup_Action *action);
 		void handleBLOCK(const Coup_Action *action);
 		void handleDOUBT(const Coup_Action *action);
 

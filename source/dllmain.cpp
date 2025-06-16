@@ -37,16 +37,29 @@ COUP_API uint8_t getPlayerCoins(uint32_t room_id, uint32_t player_id)
 	return master->getPlayer(player_id)->getCoinsNum();
 }
 
-COUP_API uint8_t getPlayerIdentityNums(uint32_t room_id, uint32_t player_id)
+COUP_API uint8_t getPlayerIdentityAliveNums(uint32_t room_id, uint32_t player_id)
 {
 	auto master = Rooms.at(room_id);
-	return static_cast<uint8_t>(master->getPlayer(player_id)->getIdentities().size());
+	return static_cast<uint8_t>(master->getPlayer(player_id)->getIdentitiesAlive().size());
 }
 
-COUP_API const COUP::ROLE_IDENTITY *getPlayerIdentities(uint32_t room_id, uint32_t player_id)
+COUP_API const COUP::ROLE_IDENTITY *getPlayerIdentitiesAlive(uint32_t room_id, uint32_t player_id)
 {
 	auto master = Rooms.at(room_id);
-	identities = master->getPlayer(player_id)->getIdentities();
+	identities = master->getPlayer(player_id)->getIdentitiesAlive();
+	return identities.data();
+}
+
+COUP_API uint8_t getPlayerIdentityDeadNums(uint32_t room_id, uint32_t player_id)
+{
+	auto master = Rooms.at(room_id);
+	return static_cast<uint8_t>(master->getPlayer(player_id)->getIdentitiesDead().size());
+}
+
+COUP_API const COUP::ROLE_IDENTITY *getPlayerIdentitiesDead(uint32_t room_id, uint32_t player_id)
+{
+	auto master = Rooms.at(room_id);
+	identities = master->getPlayer(player_id)->getIdentitiesDead();
 	return identities.data();
 }
 
