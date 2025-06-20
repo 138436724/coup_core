@@ -1,21 +1,30 @@
-add_rules("plugin.vsxmake.autoupdate")
-
 add_rules("mode.debug", "mode.release")
 set_languages("cxx23")
 
 if is_plat("windows") then
---    add_defines("MY_WINDOWS")
+   add_defines("IN_WINDOWS")
    add_links("kernel32.lib", "user32.lib", "gdi32.lib", "winspool.lib", "comdlg32.lib", "advapi32.lib", "shell32.lib", "ole32.lib", "oleaut32.lib", "uuid.lib", "odbc32.lib", "odbccp32.lib")
 elseif is_plat("linux") then 
-    -- add_defines("MY_LINUX")
+    add_defines("IN_LINUX")
 elseif is_plat("macosx") then
-    -- add_defines("MY_MACOS")
+    add_defines("IN_MACOS")
+elseif is_plat("wasm") then 
+    add_defines("IN_WASM")
+end
+
+if is_mode("debug") then
+    add_defines("DEBUG_MODE")
+elseif is_mode("release") then 
+    add_defines("RELEASE_MODE")
 end
 
 target("coup_core")
     set_kind("shared")
     add_includedirs("headers/")
     add_headerfiles("headers/*.h")
+    if is_plat("wasm") then
+        add_includedirs("$(env EMSDK)/upstream/emscripten/cache/sysroot/include")
+    end
     add_files("source/*.cpp")
 
 --

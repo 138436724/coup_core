@@ -43,6 +43,8 @@ namespace COUP
 		void handleBLOCK(const Coup_Action *action);
 		void handleDOUBT(const Coup_Action *action);
 
+		void checkGameStatus();
+
 	public:
 		bool addPlayer(uint32_t player_id);
 		Coup_Player *getPlayer(uint32_t player_id) const;
@@ -51,6 +53,8 @@ namespace COUP
 
 		bool addAction(uint32_t src_player_id, uint32_t dst_player_id, COUP::ROLE_ACTION action, bool round_end);
 		const Coup_Action *getLastAction() const;
+
+		GAME_STATUS getGameStatus() const;
 
 		static void registerCallback(callbackFunc f);
 	};

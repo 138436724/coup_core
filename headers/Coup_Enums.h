@@ -13,6 +13,7 @@ namespace COUP
 
 	enum class GAME_STATUS
 	{
+		NONE, // 没有这个房间
 		JOIN,
 		FULL,
 		OVER
