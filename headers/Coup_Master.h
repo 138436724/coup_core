@@ -6,6 +6,7 @@
 #include <stack>
 #include <unordered_map>
 #include <vector>
+#include <cstdint>
 
 typedef uint8_t (*callbackFunc)(uint32_t room_id, uint32_t player_id, int identities_num, COUP::ROLE_IDENTITY *identities);
 

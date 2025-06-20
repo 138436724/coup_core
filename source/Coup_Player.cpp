@@ -23,9 +23,9 @@ const std::vector<COUP::ROLE_IDENTITY> COUP::Coup_Player::getIdentitiesAlive() c
 	auto f = cards | std::views::filter([](const auto &card)
 										{ return card.second == true; }) |
 			 std::views::transform([](const auto &card)
-								   { return card.first; }) |
-			 std::ranges::to<std::vector>();
-	return f;
+								   { return card.first; });
+	std::vector<COUP::ROLE_IDENTITY> cards(f.begin(), f.end());
+	return cards;
 }
 
 const std::vector<COUP::ROLE_IDENTITY> COUP::Coup_Player::getIdentitiesDead() const
@@ -33,9 +33,9 @@ const std::vector<COUP::ROLE_IDENTITY> COUP::Coup_Player::getIdentitiesDead() co
 	auto f = cards | std::views::filter([](const auto &card)
 										{ return card.second == false; }) |
 			 std::views::transform([](const auto &card)
-								   { return card.first; }) |
-			 std::ranges::to<std::vector>();
-	return f;
+								   { return card.first; });
+	std::vector<COUP::ROLE_IDENTITY> cards(f.begin(), f.end());
+	return cards;
 }
 
 const bool COUP::Coup_Player::isPlayerAlive() const

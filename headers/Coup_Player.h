@@ -3,6 +3,7 @@
 #include "Coup_Enums.h"
 #include <array>
 #include <vector>
+#include <cstdint>
 
 namespace COUP
 {

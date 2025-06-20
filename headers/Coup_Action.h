@@ -1,7 +1,7 @@
 ﻿#pragma once
 
 #include "Coup_Enums.h"
-#include <stdint.h>
+#include <cstdint>
 
 namespace COUP
 {
