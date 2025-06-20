@@ -24,6 +24,8 @@ target("coup_core")
     add_headerfiles("headers/*.h")
     if is_plat("wasm") then
         add_includedirs("$(env EMSDK)/upstream/emscripten/cache/sysroot/include")
+    elseif is_plat("linux") and is_mode("release") then
+        set_symbols("hidden")
     end
     add_files("source/*.cpp")
 
